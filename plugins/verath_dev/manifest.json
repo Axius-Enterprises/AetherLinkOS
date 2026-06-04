@@ -1,0 +1,12 @@
+{
+  "id": "verath_dev",
+  "name": "VERATH Software Development Plugin",
+  "version": "1.0.0",
+  "entry": "plugin",
+  "class": "Plugin",
+  "description": "VERATH-ΦΘ powered software development: live analysis, generation, and review.",
+  "author": "Axius Tenebris / Axius Enterprises",
+  "capabilities": ["analyze", "generate", "review"],
+  "dependencies": [],
+  "verath_modes": ["dialogue", "critic", "explainer", "planner"]
+}

@@ -1,0 +1,21 @@
+[kernel]
+plugin_dirs = ["plugins"]
+
+[verath]
+initial_aai_target = 0.88
+log_turns = true
+
+[sdk]
+default_language = "python"
+analysis_types = ["syntax", "semantic", "security", "complexity", "style"]
+
+[os_hooks]
+watch_extensions = [".py", ".ts", ".js", ".tsx", ".jsx", ".rs", ".go", ".java", ".c", ".cpp"]
+scheduler_interval_seconds = 300
+
+[api.rest]
+host = "127.0.0.1"
+port = 8080
+
+[api.cli]
+default_mode = "dialogue"
