@@ -1,0 +1,12 @@
+{
+  "id": "verath_os",
+  "name": "VERATH OS Integration Plugin",
+  "version": "1.0.0",
+  "entry": "plugin",
+  "class": "Plugin",
+  "description": "OS-level integration: filesystem event bridging, scheduled VERATH health checks.",
+  "author": "Axius Tenebris / Axius Enterprises",
+  "capabilities": ["filesystem_watch", "scheduler", "health_check"],
+  "dependencies": [],
+  "verath_modes": ["planner", "dialogue"]
+}
