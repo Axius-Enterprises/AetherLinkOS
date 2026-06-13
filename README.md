@@ -59,10 +59,19 @@ aetherlinkos serve --port 8080
 pytest
 ```
 
+## Web Dashboard
+
+Once the server is running (`aetherlinkos serve`), open the root URL
+(e.g. `http://127.0.0.1:8080/`) for an interactive VERATH-ΦΘ globe built with
+[cobe](https://github.com/shuding/cobe). Markers are AetherLink nodes, arcs are
+live VERATH links, and the side panel polls `/status` and `/plugins` for live
+kernel state. Static assets live in `aetherlinkos/api/static/`.
+
 ## REST API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/` | Interactive cobe globe dashboard |
 | GET | `/status` | Kernel + VERATH snapshot |
 | POST | `/verath/run` | Raw VERATH prompt dispatch |
 | POST | `/sdk/analyze` | Code analysis |
