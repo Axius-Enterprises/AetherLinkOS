@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AetherLinkOS — VERATH-ΦΘ Globe</title>
+  <link rel="stylesheet" href="/static/globe.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div class="sigil">ΦΘ</div>
+      <div class="titles">
+        <h1>AetherLinkOS</h1>
+        <p class="subtitle">VERATH-ΦΘ · AGI Software Development &amp; OS Plugin Framework</p>
+      </div>
+    </header>
+
+    <section class="stage">
+      <div class="globe-wrap">
+        <canvas
+          id="cobe"
+          style="width: 600px; height: 600px;"
+          width="1200"
+          height="1200"
+        ></canvas>
+        <!-- Bindable label anchored to the primary node marker -->
+        <div class="marker-label" id="core-label">VERATH Core</div>
+      </div>
+
+      <aside class="panel">
+        <h2>Kernel Status</h2>
+        <dl class="status-grid">
+          <dt>State</dt><dd id="st-state">—</dd>
+          <dt>AAI</dt><dd id="st-aai">—</dd>
+          <dt>Class</dt><dd id="st-class">—</dd>
+          <dt>Plugins</dt><dd id="st-plugins">—</dd>
+          <dt>Active</dt><dd id="st-active">—</dd>
+        </dl>
+        <p class="hint" id="st-hint">Connecting to kernel…</p>
+      </aside>
+    </section>
+
+    <footer class="footnote">
+      Interactive globe powered by <a href="https://github.com/shuding/cobe" target="_blank" rel="noopener">cobe</a>.
+      Markers are AetherLink nodes; arcs are live VERATH links.
+    </footer>
+  </main>
+
+  <script type="module" src="/static/globe.js"></script>
+</body>
+</html>
