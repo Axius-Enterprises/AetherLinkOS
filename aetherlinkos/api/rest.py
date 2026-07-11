@@ -136,4 +136,7 @@ def build_app(kernel: "AetherKernel") -> "FastAPI | None":
             )
         return {"deactivated": plugin_id}
 
+    from aetherlinkos.api.auth import protect_app
+    protect_app(app)
+
     return app
