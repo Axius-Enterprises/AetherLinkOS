@@ -1,0 +1,40 @@
+[MASTER]
+# verath/ is the VERATH-ΦΘ soul — CLAUDE.md declares it immutable.
+# Lint everything else.
+ignore-paths=^verath/.*$
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-positional-arguments,
+    too-many-locals,
+    too-many-instance-attributes,
+    too-many-branches,
+    too-many-statements,
+    too-many-return-statements,
+    duplicate-code,
+    protected-access,
+    redefined-outer-name,
+    invalid-name,
+    unnecessary-pass,
+    multiple-imports,
+    multiple-statements,
+    superfluous-parens,
+    f-string-without-interpolation,
+    unused-import,
+    unused-argument,
+    import-outside-toplevel,
+    broad-exception-caught,
+    fixme,
+    raise-missing-from,
+    attribute-defined-outside-init,
+    wrong-import-position,
+    wrong-import-order,
+    use-implicit-booleaness-not-comparison
