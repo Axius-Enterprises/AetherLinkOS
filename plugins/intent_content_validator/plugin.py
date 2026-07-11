@@ -5,7 +5,7 @@ import asyncio
 import json
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional
 
 import httpx
 
@@ -26,8 +26,8 @@ class Plugin(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._service_process: subprocess.Popen | None = None
-        self._http_client: httpx.AsyncClient | None = None
+        self._service_process: Optional[subprocess.Popen] = None
+        self._http_client: Optional[httpx.AsyncClient] = None
         self._service_ready = False
 
     def on_initialize(self) -> None:
@@ -124,7 +124,7 @@ class Plugin(BasePlugin):
             f"Service did not become ready after {max_retries * delay} seconds"
         )
 
-    async def validate(self, content: str, options: dict[str, Any] | None = None) -> dict:
+    async def validate(self, content: str, options: Optional[Dict[str, Any]] = None) -> Dict:
         """
         Validate content for consistency.
 
@@ -158,9 +158,9 @@ class Plugin(BasePlugin):
 
     async def validate_batch(
         self,
-        contents: list[str],
-        options: dict[str, Any] | None = None,
-    ) -> dict:
+        contents: list,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Dict:
         """
         Validate multiple contents in batch.
 
