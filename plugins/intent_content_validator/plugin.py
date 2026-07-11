@@ -5,7 +5,7 @@ import asyncio
 import json
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 import httpx
 
@@ -158,7 +158,7 @@ class Plugin(BasePlugin):
 
     async def validate_batch(
         self,
-        contents: list,
+        contents: List[str],
         options: Optional[Dict[str, Any]] = None,
     ) -> Dict:
         """
