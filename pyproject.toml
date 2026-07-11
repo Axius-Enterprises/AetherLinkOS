@@ -7,7 +7,7 @@ name = "aetherlinkos"
 version = "0.1.0"
 description = "VERATH-ΦΘ AGI Software Development and OS Plugin Framework"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 dependencies = [
     "typer>=0.12.0",
     "watchdog>=4.0.0",
