@@ -1,0 +1,16 @@
+[MASTER]
+ignore-patterns=test_.*?py
+
+[MESSAGES CONTROL]
+disable=C,R,W
+
+[DESIGN]
+max-locals=20
+max-branches=20
+max-attributes=10
+
+[FORMAT]
+max-line-length=120
+
+[SIMILARITIES]
+min-similarity-lines=10

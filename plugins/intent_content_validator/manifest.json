@@ -1,0 +1,12 @@
+{
+  "id": "intent-content-validator",
+  "name": "Intent Content Consistency Validator",
+  "version": "0.1.0",
+  "entry": "plugin",
+  "class": "Plugin",
+  "description": "Content consistency validation using @intentsolutionsio/000-jeremy-content-consistency-validator",
+  "author": "Axius Enterprises",
+  "capabilities": ["validate-content", "validate-batch"],
+  "dependencies": ["@intentsolutionsio/000-jeremy-content-consistency-validator@3.0.2"],
+  "service_type": "node-bridge"
+}
