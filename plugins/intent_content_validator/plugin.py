@@ -7,8 +7,6 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import httpx
-
 from aetherlinkos.plugin.base import BasePlugin
 from aetherlinkos.core.events import Event, EventType
 
@@ -49,6 +47,8 @@ class Plugin(BasePlugin):
     async def _startup_service(self) -> None:
         """Start Node.js validator service."""
         try:
+            import httpx
+
             service_dir = Path(__file__).parent.parent / "intent_content_validator_js"
 
             if not service_dir.exists():
