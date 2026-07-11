@@ -1,5 +1,6 @@
 """FastAPI REST interface for the AetherLink kernel and VERATH SDK."""
 from __future__ import annotations
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -7,10 +8,13 @@ if TYPE_CHECKING:
 
 try:
     from fastapi import FastAPI, HTTPException
+    from fastapi.responses import HTMLResponse
     from pydantic import BaseModel
     _HAS_FASTAPI = True
 except ImportError:
     _HAS_FASTAPI = False
+
+_STATIC_DIR = Path(__file__).parent / "static"
 
 
 def build_app(kernel: "AetherKernel") -> "FastAPI | None":
@@ -55,6 +59,20 @@ def build_app(kernel: "AetherKernel") -> "FastAPI | None":
     @app.get("/status", summary="Kernel and VERATH status snapshot")
     async def get_status() -> dict:
         return kernel.status()
+
+    # ── Network globe visualization ───────────────────────────────────────
+
+    @app.get(
+        "/globe",
+        summary="AetherLink network globe (cobe WebGL visualization)",
+        response_class=HTMLResponse,
+        include_in_schema=True,
+    )
+    async def globe_page() -> HTMLResponse:
+        page = _STATIC_DIR / "globe.html"
+        if not page.is_file():
+            raise HTTPException(status_code=404, detail="globe.html not found")
+        return HTMLResponse(page.read_text(encoding="utf-8"))
 
     # ── VERATH direct access ──────────────────────────────────────────────
 

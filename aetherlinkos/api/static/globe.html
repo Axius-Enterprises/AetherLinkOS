@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AetherLinkOS — Network Globe</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --fg: #e8e6f0;
+    --dim: #8a86a0;
+    --accent: #b98aff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: radial-gradient(ellipse at 50% 120%, #1a1430 0%, #0b0918 60%, #060510 100%);
+    color: var(--fg);
+    font: 15px/1.5 system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+  header { text-align: center; }
+  header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 0.06em; }
+  header p  { color: var(--dim); font-size: 0.85rem; }
+  #stage { position: relative; width: min(600px, 92vw); aspect-ratio: 1; }
+  #cobe { width: 100%; height: 100%; cursor: grab; }
+  #cobe.grabbing { cursor: grabbing; }
+
+  .label {
+    position: absolute;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid rgba(185, 138, 255, 0.4);
+    border-radius: 999px;
+    background: rgba(15, 12, 30, 0.75);
+    backdrop-filter: blur(4px);
+    font-size: 0.72rem;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity 0.3s, filter 0.3s;
+  }
+  /* Marker labels — anchored to bindable marker ids, faded by visibility vars */
+  .label.sf {
+    position-anchor: --cobe-sf;
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% -0.5rem;
+    opacity: var(--cobe-visible-sf, 0);
+    filter: blur(calc((1 - var(--cobe-visible-sf, 0)) * 8px));
+  }
+  .label.nyc {
+    position-anchor: --cobe-nyc;
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% -0.5rem;
+    opacity: var(--cobe-visible-nyc, 0);
+    filter: blur(calc((1 - var(--cobe-visible-nyc, 0)) * 8px));
+  }
+  .label.tokyo {
+    position-anchor: --cobe-tokyo;
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% -0.5rem;
+    opacity: var(--cobe-visible-tokyo, 0);
+    filter: blur(calc((1 - var(--cobe-visible-tokyo, 0)) * 8px));
+  }
+  .label.berlin {
+    position-anchor: --cobe-berlin;
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% -0.5rem;
+    opacity: var(--cobe-visible-berlin, 0);
+    filter: blur(calc((1 - var(--cobe-visible-berlin, 0)) * 8px));
+  }
+  /* Arc label — anchored to the bindable arc id */
+  .label.arc {
+    position-anchor: --cobe-arc-sf-tokyo;
+    bottom: anchor(top);
+    left: anchor(center);
+    translate: -50% -0.5rem;
+    color: var(--accent);
+    opacity: var(--cobe-visible-arc-sf-tokyo, 0);
+  }
+
+  footer {
+    display: flex;
+    gap: 1.5rem;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+  footer b { color: var(--fg); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AETHERLINK NETWORK GLOBE</h1>
+  <p>VERATH-ΦΘ node topology — drag to rotate</p>
+</header>
+
+<div id="stage">
+  <canvas id="cobe" width="1200" height="1200"></canvas>
+  <span class="label sf">SF — kernel</span>
+  <span class="label nyc">NYC — relay</span>
+  <span class="label tokyo">Tokyo — plugin host</span>
+  <span class="label berlin">Berlin — relay</span>
+  <span class="label arc">ΣΦΘ uplink</span>
+</div>
+
+<footer>
+  <span>kernel: <b id="kernel-state">…</b></span>
+  <span>plugins: <b id="plugin-count">…</b></span>
+  <span>AAI: <b id="aai">…</b></span>
+</footer>
+
+<script type="module">
+import createGlobe from 'https://esm.sh/cobe';
+
+const canvas = document.getElementById('cobe');
+
+let phi = 0;
+let autoSpin = 0.005;
+let pointerDown = null;
+let dragPhi = 0;
+
+const globe = createGlobe(canvas, {
+  devicePixelRatio: 2,
+  width: 1200,
+  height: 1200,
+  phi: 0,
+  theta: 0.22,
+  dark: 1,
+  diffuse: 1.2,
+  scale: 1,
+  mapSamples: 16000,
+  mapBrightness: 10,
+  baseColor: [0.42, 0.35, 0.65],
+  markerColor: [0.73, 0.54, 1],
+  glowColor: [0.45, 0.35, 0.7],
+  offset: [0, 0],
+  markers: [
+    { location: [37.7595, -122.4367], size: 0.08, id: 'sf' },
+    { location: [40.7128, -74.006],   size: 0.05, id: 'nyc' },
+    { location: [35.6762, 139.6503],  size: 0.06, id: 'tokyo', color: [1, 0.6, 0.3] },
+    { location: [52.52, 13.405],      size: 0.05, id: 'berlin' },
+  ],
+  arcs: [
+    { from: [37.7595, -122.4367], to: [35.6762, 139.6503], id: 'sf-tokyo' },
+    { from: [37.7595, -122.4367], to: [40.7128, -74.006] },
+    { from: [40.7128, -74.006],   to: [52.52, 13.405], color: [0.5, 0.8, 1] },
+  ],
+  arcColor: [0.73, 0.54, 1],
+  arcWidth: 0.5,
+  arcHeight: 0.3,
+  markerElevation: 0.02,
+  onRender: (state) => {
+    if (pointerDown === null) phi += autoSpin;
+    state.phi = phi + dragPhi;
+  },
+});
+
+// Drag to rotate
+canvas.addEventListener('pointerdown', (e) => {
+  pointerDown = e.clientX - dragPhi * 200;
+  canvas.classList.add('grabbing');
+});
+window.addEventListener('pointermove', (e) => {
+  if (pointerDown !== null) dragPhi = (e.clientX - pointerDown) / 200;
+});
+window.addEventListener('pointerup', () => {
+  pointerDown = null;
+  canvas.classList.remove('grabbing');
+});
+
+window.addEventListener('beforeunload', () => globe.destroy());
+
+// Live kernel status in the footer (served by the same FastAPI app)
+async function refreshStatus() {
+  try {
+    const s = await (await fetch('/status')).json();
+    document.getElementById('kernel-state').textContent = 'online';
+    const active = s.plugins?.active ?? [];
+    const loaded = s.plugins?.loaded ?? [];
+    document.getElementById('plugin-count').textContent = `${active.length}/${loaded.length}`;
+    const aai = s.verath?.aai ?? s.aai;
+    document.getElementById('aai').textContent =
+      typeof aai === 'number' ? aai.toFixed(3) : (aai ?? '—');
+  } catch {
+    document.getElementById('kernel-state').textContent = 'offline';
+  }
+}
+refreshStatus();
+setInterval(refreshStatus, 10_000);
+</script>
+</body>
+</html>
