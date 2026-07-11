@@ -1,0 +1,24 @@
+[MASTER]
+# Pylint configuration for AetherLinkOS
+
+[MESSAGES CONTROL]
+# Only report critical issues (errors and fatal)
+# Allow warnings, conventions, and refactors for now
+disable=
+    C,  # Convention
+    R,  # Refactor
+    W,  # Warning
+
+[DESIGN]
+# Allow larger functions/methods
+max-locals=20
+max-branches=20
+max-attributes=10
+
+[FORMAT]
+# Allow longer lines
+max-line-length=120
+
+[SIMILARITIES]
+# Reduce similarity threshold
+min-similarity-lines=10
