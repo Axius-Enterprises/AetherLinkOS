@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from aetherlinkos.plugin.base import BasePlugin
 from aetherlinkos.core.events import Event, EventType
@@ -47,6 +46,7 @@ class Plugin(BasePlugin):
     async def _startup_service(self) -> None:
         """Start Node.js validator service."""
         try:
+            # pylint: disable=import-outside-toplevel
             import httpx
 
             service_dir = Path(__file__).parent.parent / "intent_content_validator_js"
@@ -78,7 +78,7 @@ class Plugin(BasePlugin):
                     "service_url": self.SERVICE_URL,
                 },
             ))
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             await self.kernel.events.publish(Event(
                 type=EventType.PLUGIN_ACTIVATED,
                 source=self.plugin_id,
@@ -101,7 +101,7 @@ class Plugin(BasePlugin):
                     self._service_process.kill()
 
             self._service_ready = False
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"Error during service shutdown: {e}")
 
     async def _wait_for_service(self, max_retries: int = 30, delay: float = 0.5) -> None:
@@ -114,7 +114,7 @@ class Plugin(BasePlugin):
                 )
                 if response.status_code == 200:
                     return
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 pass
 
             if attempt < max_retries - 1:
@@ -194,5 +194,3 @@ class Plugin(BasePlugin):
 
     async def _on_plugin_event(self, event: Event) -> None:
         """Handle plugin lifecycle events."""
-        # Placeholder for event handling logic
-        pass

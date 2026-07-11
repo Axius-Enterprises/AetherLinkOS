@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import asyncio
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
-# Mock the plugin before import
+import pytest
+
+# pylint: disable=redefined-outer-name, protected-access, import-outside-toplevel
 pytest_plugins = []
 
 
@@ -24,11 +25,14 @@ def mock_kernel():
 @pytest.fixture
 def validator_plugin(mock_kernel):
     """Create validator plugin instance for testing."""
-    from aetherlinkos.plugin.base import BasePlugin
     from plugins.intent_content_validator.plugin import Plugin
 
     plugin = Plugin(kernel=mock_kernel)
-    plugin.manifest = {"id": "intent-content-validator", "name": "Intent Content Validator", "version": "0.1.0"}
+    plugin.manifest = {
+        "id": "intent-content-validator",
+        "name": "Intent Content Validator",
+        "version": "0.1.0"
+    }
     return plugin
 
 
@@ -110,7 +114,9 @@ async def test_validate_batch_with_service_ready(validator_plugin):
     validator_plugin._http_client = mock_client
 
     # Test batch validation
-    result = await validator_plugin.validate_batch(["Content 1", "Content 2"])
+    result = await validator_plugin.validate_batch(
+        ["Content 1", "Content 2"]
+    )
     assert result["success"] is True
     assert len(result["data"]) == 2
     assert mock_client.post.called
@@ -151,12 +157,21 @@ def test_plugin_has_service_constants(validator_plugin):
 
 def test_manifest_file_exists():
     """Test manifest.json exists for plugin."""
-    manifest_path = Path(__file__).parent.parent / "plugins" / "intent_content_validator" / "manifest.json"
+    manifest_path = (
+        Path(__file__).parent.parent
+        / "plugins"
+        / "intent_content_validator"
+        / "manifest.json"
+    )
     assert manifest_path.exists()
-    # Could add JSON parsing validation here
 
 
 def test_node_service_package_exists():
     """Test Node.js service package.json exists."""
-    package_path = Path(__file__).parent.parent / "plugins" / "intent_content_validator_js" / "package.json"
+    package_path = (
+        Path(__file__).parent.parent
+        / "plugins"
+        / "intent_content_validator_js"
+        / "package.json"
+    )
     assert package_path.exists()
