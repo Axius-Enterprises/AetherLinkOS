@@ -1,5 +1,6 @@
 """FastAPI REST interface for the AetherLink kernel and VERATH SDK."""
 from __future__ import annotations
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -7,10 +8,14 @@ if TYPE_CHECKING:
 
 try:
     from fastapi import FastAPI, HTTPException
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
     _HAS_FASTAPI = True
 except ImportError:
     _HAS_FASTAPI = False
+
+_STATIC_DIR = Path(__file__).parent / "static"
 
 
 def build_app(kernel: "AetherKernel") -> "FastAPI | None":
@@ -49,6 +54,16 @@ def build_app(kernel: "AetherKernel") -> "FastAPI | None":
         code: str
         language: str = "python"
         context: str = ""
+
+    # ── Web dashboard (cobe globe) ────────────────────────────────────────
+
+    if _STATIC_DIR.is_dir():
+        app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
+
+        @app.get("/", include_in_schema=False)
+        async def dashboard() -> "FileResponse":
+            """Serve the AetherLinkOS VERATH-ΦΘ globe dashboard."""
+            return FileResponse(_STATIC_DIR / "index.html")
 
     # ── Kernel status ─────────────────────────────────────────────────────
 
