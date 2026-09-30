@@ -1,0 +1,30 @@
+{
+  "name": "@aetherlinkos/intent-content-validator",
+  "version": "0.1.0",
+  "description": "Intent content consistency validator service for AetherLinkOS",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "node --watch dist/index.js",
+    "build": "echo 'Using JavaScript, no build step needed'",
+    "test": "echo 'Tests would go here'"
+  },
+  "keywords": [
+    "aetherlinkos",
+    "validator",
+    "content-consistency",
+    "intent"
+  ],
+  "author": "Axius Enterprises",
+  "license": "MIT",
+  "dependencies": {
+    "@intentsolutionsio/000-jeremy-content-consistency-validator": "3.0.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
