@@ -53,7 +53,11 @@ aetherlinkos generate "A rate-limiter using token bucket algorithm" --lang pytho
 aetherlinkos review mycode.py
 
 # Start REST API
+pip install -e ".[serve]"   # FastAPI/uvicorn are an optional extra
 aetherlinkos serve --port 8080
+
+# Built-in plugins load only when a plugin directory is given
+aetherlinkos status --plugins plugins
 
 # Run tests
 pytest

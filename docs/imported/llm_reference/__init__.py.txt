@@ -1,0 +1,5 @@
+"""LLM integration layer — VERATH ↔ Claude API bridge."""
+from .client import LLMClient
+from .adapter import VerathLLMAdapter
+
+__all__ = ["LLMClient", "VerathLLMAdapter"]

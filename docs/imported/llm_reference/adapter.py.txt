@@ -1,0 +1,180 @@
+"""
+VERATH ↔ LLM bridge.
+
+The adapter sits between the VerathAPI kernel and the LLMClient.
+Every user turn flows through the ΦΘ loop first (pre-processing + safety),
+then the cleaned, emotionally-informed prompt is sent to Claude, and the
+LLM response is returned as the canonical VERATH output with full
+telemetry side-effects.
+"""
+from __future__ import annotations
+
+import logging
+import time
+from typing import Any
+
+from verath import VerathAPI, EVS, _default_state, InvariantViolation, EkpyroticEvent
+from llm.client import LLMClient
+from telemetry.tracker import TelemetryTracker
+
+logger = logging.getLogger(__name__)
+
+
+class VerathLLMAdapter:
+    """
+    Orchestrates one conversation session.
+
+    Flow per turn:
+        1. Run VERATH ΦΘ kernel (pre-processing, safety gate, EVS update).
+        2. If SAFETY BLOCK → return block message, log safety event, stop.
+        3. Build message history for the LLM.
+        4. Call LLMClient.chat() with current emotional state + AAI.
+        5. Record telemetry snapshot.
+        6. Return LLM response as the canonical answer.
+
+    The ΦΘ kernel output (stage 6 rendered text) is NOT sent to the user —
+    it serves as the *context framing* for the LLM call.  The LLM's reply
+    is the user-facing response.  This preserves VERATH's personality and
+    safety invariants while leveraging full LLM fluency.
+    """
+
+    def __init__(
+        self,
+        session_id: str,
+        mode: str = "dialogue",
+        tracker: TelemetryTracker | None = None,
+    ) -> None:
+        self.session_id = session_id
+        self.mode = mode
+        self._verath = VerathAPI()
+        self._llm = LLMClient()
+        self._tracker = tracker or TelemetryTracker(session_id)
+        self._history: list[dict[str, str]] = []  # LLM message history
+        self._turn = 0
+
+    # ── Public ────────────────────────────────────────────────────────────
+
+    def chat(self, user_text: str, tone: list[str] | None = None) -> dict[str, Any]:
+        """
+        Process one user turn end-to-end.
+
+        Returns a dict with:
+            response    str   — the LLM-generated VERATH reply
+            blocked     bool  — True if Zeta-2/AAC blocked the request
+            verath_ctx  str   — ΦΘ kernel rendered context (diagnostic)
+            state       dict  — post-turn VERATH state snapshot
+            turn        int   — turn counter
+            latency_ms  float — wall-clock ms for the full turn
+        """
+        t0 = time.monotonic()
+        self._turn += 1
+
+        prompt = {"text": user_text, "tone": tone or self._infer_tone(user_text)}
+
+        # ── Step 1: VERATH ΦΘ kernel ──────────────────────────────────────
+        verath_ctx, new_state = self._run_verath(prompt)
+
+        blocked = verath_ctx.startswith("SAFETY BLOCK") or verath_ctx.startswith("EKPYROTIC")
+
+        # ── Step 2: Safety gate ───────────────────────────────────────────
+        if blocked:
+            self._tracker.record_safety_block(
+                turn=self._turn,
+                reason=verath_ctx,
+                aai=new_state.get("aai", 0.0),
+            )
+            latency_ms = (time.monotonic() - t0) * 1000
+            return {
+                "response":   verath_ctx,
+                "blocked":    True,
+                "verath_ctx": verath_ctx,
+                "state":      new_state,
+                "turn":       self._turn,
+                "latency_ms": round(latency_ms, 2),
+            }
+
+        # ── Step 3: Build LLM message history ────────────────────────────
+        # Prepend the ΦΘ kernel framing as a system note in the first user
+        # message of each turn so the LLM understands the cognitive context.
+        llm_user_content = (
+            f"[ΦΘ context: {verath_ctx}]\n\n"
+            f"User: {user_text}"
+        )
+        self._history.append({"role": "user", "content": llm_user_content})
+
+        # ── Step 4: LLM call ──────────────────────────────────────────────
+        es = new_state.get("emotional_state")
+        aai = new_state.get("aai")
+
+        llm_response = self._llm.chat(
+            messages=self._history,
+            emotional_state=es,
+            aai=aai,
+        )
+        self._history.append({"role": "assistant", "content": llm_response})
+
+        # Trim history to last 20 turns (40 messages) to avoid context bloat
+        if len(self._history) > 40:
+            self._history = self._history[-40:]
+
+        # ── Step 5: Telemetry ─────────────────────────────────────────────
+        latency_ms = (time.monotonic() - t0) * 1000
+        self._tracker.record_turn(
+            turn=self._turn,
+            prompt=user_text,
+            response=llm_response,
+            verath_state=new_state,
+            latency_ms=latency_ms,
+        )
+
+        return {
+            "response":   llm_response,
+            "blocked":    False,
+            "verath_ctx": verath_ctx,
+            "state":      new_state,
+            "turn":       self._turn,
+            "latency_ms": round(latency_ms, 2),
+        }
+
+    def status(self) -> dict:
+        """Current VERATH kernel status + session metadata."""
+        return {
+            **self._verath.status(),
+            "session_id": self.session_id,
+            "mode":       self.mode,
+            "turn":       self._turn,
+            "history_len": len(self._history),
+        }
+
+    def reset(self) -> None:
+        """Reset VERATH state and conversation history (new session turn)."""
+        self._verath = VerathAPI()
+        self._history = []
+        self._turn = 0
+
+    # ── Internals ─────────────────────────────────────────────────────────
+
+    def _run_verath(self, prompt: dict) -> tuple[str, dict]:
+        dispatch = {
+            "dialogue": self._verath._dialogue_mode,
+            "planner":  self._verath._planner_mode,
+            "explainer": self._verath._explainer_mode,
+            "critic":   self._verath._critic_mode,
+        }
+        fn = dispatch.get(self.mode, self._verath._dialogue_mode)
+        return fn(prompt, {})
+
+    @staticmethod
+    def _infer_tone(text: str) -> list[str]:
+        """Heuristic tone detection from raw text."""
+        low = text.lower()
+        tones: list[str] = []
+        if any(w in low for w in ("urgent", "asap", "immediately", "emergency")):
+            tones.append("urgent")
+        if any(w in low for w in ("haha", "lol", "joke", "funny", "playful")):
+            tones.append("playful")
+        if any(w in low for w in ("please", "thank", "appreciate", "solemn", "serious")):
+            tones.append("solemn")
+        if any(w in low for w in ("why", "how", "what", "curious", "wonder", "?")):
+            tones.append("curious")
+        return tones or ["solemn"]
