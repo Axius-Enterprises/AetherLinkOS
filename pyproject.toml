@@ -20,11 +20,9 @@ serve = [
     "pydantic>=2.0.0",
 ]
 dev = [
+    "aetherlinkos[serve]",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
-    "fastapi>=0.110.0",
-    "uvicorn[standard]>=0.27.0",
-    "pydantic>=2.0.0",
 ]
 
 [project.scripts]

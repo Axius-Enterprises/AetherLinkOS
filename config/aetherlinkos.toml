@@ -1,3 +1,6 @@
+# NOTE: This file is a placeholder. No code reads it yet; the values below
+# document the intended defaults for a future configuration loader.
+
 [kernel]
 plugin_dirs = ["plugins"]
 
