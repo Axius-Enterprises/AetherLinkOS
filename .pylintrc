@@ -1,0 +1,29 @@
+[MAIN]
+# Fail the build on any error-category message (E/F), regardless of score.
+fail-on=E,F
+
+# Otherwise pass while the overall score stays at or above this threshold.
+# Existing code carries known style debt (see verath/verath_unified.py, which
+# is immutable per CLAUDE.md); new code should keep the score moving up.
+# Current baseline: 9.21/10.
+fail-under=8.0
+
+ignore=.git
+
+[MESSAGES CONTROL]
+# Style conventions that don't gate CI for this codebase:
+# - docstring conventions are encouraged but not enforced repo-wide yet
+# - tests legitimately use fixture injection (redefined-outer-name) and
+#   touch protected members of the VERATH runtime
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+
+[FORMAT]
+max-line-length=100
+
+[DESIGN]
+max-args=8
+max-locals=20

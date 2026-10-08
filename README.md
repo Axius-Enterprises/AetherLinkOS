@@ -64,6 +64,7 @@ pytest
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/status` | Kernel + VERATH snapshot |
+| GET | `/globe` | AetherLink network globe (WebGL, [cobe](https://cobe.vercel.app)) |
 | POST | `/verath/run` | Raw VERATH prompt dispatch |
 | POST | `/sdk/analyze` | Code analysis |
 | POST | `/sdk/generate` | Code generation |
